@@ -1,0 +1,6 @@
+---
+# defaults file for mariadb_cluster_with_galera
+
+mysql_root_password: "cluster_user"
+mysql_user: "cluster_user"
+disable_default: true
