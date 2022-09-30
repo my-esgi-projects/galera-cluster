@@ -1,0 +1,10 @@
+---
+# tasks file for mariadb_cluster_with_galera
+
+- include_tasks: mariadb/install.yaml
+
+- include_tasks: galera/config.yaml
+
+- include_tasks: galera/install.yaml
+
+- include_tasks: galera/config.yaml
