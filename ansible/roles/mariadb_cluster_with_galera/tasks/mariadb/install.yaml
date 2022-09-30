@@ -1,0 +1,50 @@
+---
+# tasks file for mariadb_cluster_with_galera
+- name: Insert hostnames config
+  blockinfile:
+    path: /etc/hosts
+    block: |
+      10.33.3.89 db-1.hdpw-esgi.fr db-1 
+      10.33.4.106 db-2.hdpw-esgi.fr db-2 
+      10.33.1.101 db-3.hdpw-esgi.fr db-3 
+    backup: yes 
+
+- name: Install prerequisites
+  apt: name={{ item }} update_cache=yes state=latest force_apt_get=yes
+  loop: [ 'aptitude','python3','python3-pip']
+
+ #Install MariaDB server and other packages
+- name: Install MariaDB Packages
+  apt: name={{ item }} update_cache=yes state=latest
+  loop: [ 'mariadb-server','python3-pymysql', 'mariadb-client', 'vim', 'sudo']
+
+# Start MariaDB Service
+- name: Start MariaDB service
+  service:
+    name: mariadb
+    state: started
+  become: true
+
+ # MariaDB Configuration
+- name: Sets the root password
+  mysql_user:
+    name: root
+    password: "{{ mysql_root_password }}"
+    login_user: "{{ mysql_user }}"
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Removes all anonymous user accounts
+  mysql_user:
+    name: ''
+    host_all: yes
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+- name: Removes the MySQL test database
+  mysql_db:
+    name: test
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
