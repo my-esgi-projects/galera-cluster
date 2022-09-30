@@ -1,0 +1,28 @@
+---
+- hosts: galera:master
+  gather_facts: no
+  remote_user: myuser
+
+  tasks:
+    # - name: "test"
+    #   debug: 
+    #     var: item
+    #   loop: "{{ vars['groups']['galera'] }}"
+
+    # - name: "Read a file data"
+    #   debug:
+    #     msg: |
+    #       The ip is {{ item }}
+    #       The short name is  {{ vars['groups']['galera'][item]['short_name'] }}
+    #       The domain name is {{ hostvars[inventory_hostname]['domain_name'] }}
+    #   loop: "{{ vars['groups']['galera'] }}"
+
+
+    - name: "write in file"
+      lineinfile:
+        dest: /tmp/hosts
+        line: "{{ item }} {{ hostvars[inventory_hostname]['short_name'] }}.{{ hostvars[inventory_hostname]['domain_name'] }} {{ hostvars[inventory_hostname]['short_name'] }}"
+        state: present
+        create: yes
+        backup: yes
+      loop: "{{ vars['groups']['galera'] }}"
