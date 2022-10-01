@@ -1,13 +1,15 @@
 ---
 # tasks file for mariadb_cluster_with_galera
-- name: Insert hostnames config
-  blockinfile:
-    path: /etc/hosts
-    block: |
-      10.33.3.89 db-1.hdpw-esgi.fr db-1 
-      10.33.4.106 db-2.hdpw-esgi.fr db-2 
-      10.33.1.101 db-3.hdpw-esgi.fr db-3 
-    backup: yes 
+- name: "Config hostnames"
+  lineinfile:
+    dest: /etc/hosts
+    line: "{{ item }} {{ hostvars[groups.galera[index]].short_names[index] }}.{{ hostvars[inventory_hostname]['domain_name'] }} {{ hostvars[groups.galera[index]].short_names[index] }}"
+    state: present
+    create: yes
+    backup: yes
+  loop: "{{ vars['groups']['galera'] }}"
+  loop_control:
+    index_var: index 
 
 - name: Install prerequisites
   apt: name={{ item }} update_cache=yes state=latest force_apt_get=yes
