@@ -4,25 +4,41 @@
   remote_user: myuser
 
   tasks:
-    # - name: "test"
-    #   debug: 
-    #     var: item
-    #   loop: "{{ vars['groups']['galera'] }}"
+    - name: "test"
+      debug:
+        msg: |
+          The index is {{ index }}
+      loop:
+        #- "{{ hostvars[groups.galera[0]].short_names }}"
+        - "{{ vars['groups']['galera'] }}"
+      loop_control:
+        index_var: index
 
-    # - name: "Read a file data"
-    #   debug:
-    #     msg: |
-    #       The ip is {{ item }}
-    #       The short name is  {{ vars['groups']['galera'][item]['short_name'] }}
-    #       The domain name is {{ hostvars[inventory_hostname]['domain_name'] }}
-    #   loop: "{{ vars['groups']['galera'] }}"
+    # - name: with_indexed_items -> loop
+    #   ansible.builtin.debug:
+    #     msg: "{{ index }} - {{ item }}"
+    #   loop: "{{ vars['groups']['galera'] |flatten(levels=1) }}"
+    #   loop_control:
+    #     index_var: index
+
+    - name: "debug"
+      debug:
+        msg: |
+          The ip is {{ item }}
+          The short name is  {{ hostvars[groups.galera[index]].short_names[index] }} }}
+          The domain name is {{ hostvars[inventory_hostname]['domain_name'] }}
+      loop: "{{ vars['groups']['galera'] }}"
+      loop_control:
+        index_var: index 
 
 
     - name: "write in file"
       lineinfile:
         dest: /tmp/hosts
-        line: "{{ item }} {{ hostvars[inventory_hostname]['short_name'] }}.{{ hostvars[inventory_hostname]['domain_name'] }} {{ hostvars[inventory_hostname]['short_name'] }}"
+        line: "{{ item }} {{ hostvars[groups.galera[index]].short_names[index] }}.{{ hostvars[inventory_hostname]['domain_name'] }} {{ hostvars[groups.galera[index]].short_names[index] }}"
         state: present
         create: yes
         backup: yes
       loop: "{{ vars['groups']['galera'] }}"
+      loop_control:
+        index_var: index 
