@@ -1,0 +1,54 @@
+---
+# tasks file for install mariadb
+- name: Install prerequisites
+  apt: name={{ item }} update_cache=yes state=latest force_apt_get=yes
+  loop: [ 'aptitude','python3','python3-pip']
+
+ #Install MariaDB server and other packages
+- name: Install MariaDB Packages
+  apt: name={{ item }} update_cache=yes state=latest
+  loop: [ 'mariadb-server','python3-pymysql', 'mariadb-client', 'vim', 'sudo']
+
+# Start MariaDB Service
+- name: Start MariaDB service
+  ansible.builtin.systemd:
+    name: mariadb
+    enabled: yes
+    state: started
+
+ # MariaDB Configuration
+- name: Sets the root password
+  mysql_user:
+    name: root
+    password: "{{ mysql_root_password }}"
+    login_user: root
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  ignore_errors: yes
+
+- name: Removes all anonymous user accounts
+  mysql_user:
+    name: ''
+    host_all: yes
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+- name: Removes the MySQL test database
+  mysql_db:
+    name: test
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+- name: Comment bind-address to localhost
+  replace:
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    regexp: 'bind-address'
+    replace: '#bind-address'
+    backup: yes
+
+- name: Restart server 
+  ansible.builtin.systemd:
+    name: mariadb
+    state: restarted

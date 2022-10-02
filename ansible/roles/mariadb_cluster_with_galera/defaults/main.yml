@@ -1,0 +1,22 @@
+---
+# defaults file for mariadb_cluster_with_galera
+
+# configs for mariadb
+mysql_root_password: "root"
+disable_default: true
+
+# configs for galera
+galera_group_name_for_master: "galera_master"
+galera_group_name_for_slave: "galera_slave"
+galera_group_name_for_proxy_sql: "galera_proxy_sql"
+
+galera_hosts_short_names: ['db-1','db-2','db-3']
+
+galera_monitor_user: "monitor"
+galera_monitor_password: "monitor"
+
+galera_demo_user : "demouser"
+galera_demo_user_password: "demouser"
+
+# configs for proxysql
+proxy_sql_admin_password: "admin"

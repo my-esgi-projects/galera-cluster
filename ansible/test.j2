@@ -1,0 +1,27 @@
+{#add galera nodes#}
+
+{% set proxy_short_name = [galera_hosts_short_names | last] %}
+
+
+{% set galera_hosts_short_names_without_proxy = galera_hosts_short_names | difference(proxy_short_name) %}
+
+
+{% for item in galera_hosts_short_names_without_proxy %}
+    INSERT INTO main.mysql_servers(hostgroup_id,hostname,port) VALUES (1,'{{item}}',3306);
+{%endfor%}
+
+
+SAVE MYSQL SERVERS TO DISK;
+SAVE MYSQL VARIABLES TO DISK;
+
+LOAD MYSQL VARIABLES TO RUNTIME;
+SAVE MYSQL VARIABLES TO DISK;
+
+LOAD MYSQL SERVERS TO RUNTIME;
+SAVE MYSQL SERVERS TO DISK;
+SAVE MYSQL VARIABLES TO DISK;
+
+INSERT INTO mysql_users(username,password,default_hostgroup) VALUES ('{{ galera_demo_user }}','{{ galera_demo_user_password }}',1);
+
+LOAD MYSQL USERS TO RUNTIME;
+SAVE MYSQL USERS TO DISK;

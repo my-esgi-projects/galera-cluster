@@ -1,0 +1,49 @@
+all:
+  
+  children:
+    galera:
+      children:
+        galera_master:
+          hosts:
+            192.168.1.30: 
+              
+        galera_slave:
+          hosts:
+            192.168.1.17:
+            192.168.1.27:
+
+        galera_proxy_sql:
+          hosts:
+            192.168.1.70
+      vars:
+        galera_hosts_short_names: ['db-1','db-2','db-3','proxysql']
+        domain_name: hdpw-esgi.fr
+
+        # configs for mariadb
+        mysql_root_password: "root"
+        disable_default: true
+
+        # configs for galera
+        galera_group_name_for_master: "galera_master"
+        galera_group_name_for_slave: "galera_slave"
+        galera_group_name_for_proxy_sql: "galera_proxy_sql"
+
+        galera_monitor_user: "monitor"
+        galera_monitor_password: "monitor"
+
+        galera_demo_user : "demouser"
+        galera_demo_user_password: "demouser"
+
+        # configs for proxysql
+        proxy_sql_admin_password: "admin"
+
+  
+  vars:
+    ansible_port: 2222
+    ansible_user: myuser
+    ansible_ssh_user: myuser
+    ansible_become_user: root
+    ansible_become: true
+    ansible_become_password: myuser
+    ansible_ssh_private_key_file: ~/.ssh/id_rsa
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'

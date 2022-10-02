@@ -1,0 +1,51 @@
+---
+# tasks file for config galera
+
+- name: Config master nodes
+  template:
+    src: "../../templates/master/galera_master.j2"
+    dest: "/etc/mysql/mariadb.conf.d/galera.cnf"
+
+- name: Setup new galera cluster 
+  shell:
+    cmd: galera_new_cluster
+
+- name: Restart mariadb service 
+  ansible.builtin.systemd:
+    name: mariadb
+    state: restarted
+
+
+- name: Create demodb database test
+  mysql_db:
+    name: "demodb_master"
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+- name: Create monitor user
+  mysql_user:
+    name: "{{ galera_monitor_user }}"
+    password: "{{ galera_monitor_password }}"
+    state: present 
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+- name: Create another demo database
+  mysql_db:
+    name: "anotherdemodb_master"
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+- name: Create demo user
+  mysql_user:
+    name: "{{ galera_demo_user }}"
+    password: "{{ galera_demo_user_password }}"
+    state: present 
+    priv: 'anotherdemodb_master.*:ALL,GRANT'
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
+
+

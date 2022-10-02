@@ -1,0 +1,11 @@
+---
+- hosts: galera
+  gather_facts: no
+  remote_user: my_user
+
+  roles:
+    -  mariadb_cluster_with_galera
+  
+
+  
+
