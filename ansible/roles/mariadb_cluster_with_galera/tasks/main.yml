@@ -1,10 +1,24 @@
 ---
 # tasks file for mariadb_cluster_with_galera
-
+- name: "Config hostnames"
+  lineinfile:
+    dest: /etc/hosts
+    line: "{{ item }} {{ hostvars[groups.galera[index]].galera_hosts_short_names[index] }}.{{ hostvars[inventory_hostname]['domain_name'] }} {{ hostvars[groups.galera[index]].galera_hosts_short_names[index] }}"
+    state: present
+    create: yes
+    backup: yes
+  loop: "{{ vars['groups']['galera'] }}"
+  loop_control:
+    index_var: index
+  
 - include_tasks: mariadb/install.yaml
+  when: '"{{ galera_group_name_for_proxy_sql }}" is not in group_names'
 
-- include_tasks: galera/config.yaml
+- include_tasks: galera/config_master.yaml
+  when: '"{{ galera_group_name_for_master }}" in group_names'
 
-- include_tasks: galera/install.yaml
+- include_tasks: galera/config_slave.yaml
+  when: '"{{ galera_group_name_for_slave }}" in group_names'
 
-- include_tasks: galera/config.yaml
+- include_tasks: proxy/install.yml
+  when: '"{{ galera_group_name_for_proxy_sql }}" in group_names'
