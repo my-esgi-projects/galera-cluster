@@ -1,9 +1,8 @@
 ---
-
-#install proxysql and config it
+# Install proxysql and config it
 
 - name: "Check if proxysql is installed"
-  command: dpkg-query -W proxysql 
+  ansible.builtin.command: dpkg-query -W proxysql
   register: proxysql_check_deb
   failed_when: proxysql_check_deb.rc > 1
   changed_when: proxysql_check_deb.rc == 1
@@ -12,28 +11,33 @@
   ansible.builtin.get_url:
     url: https://github.com/sysown/proxysql/releases/download/v2.2.0/proxysql_2.2.0-debian10_amd64.deb
     dest: /tmp/proxysql.deb
+    mode: 0644
   when: proxysql_check_deb.rc == 1
 
 - name: "Install my_package"
-  apt: 
+  ansible.builtin.apt:
     deb: "/tmp/proxysql.deb"
   when: proxysql_check_deb.rc == 1
-
 
 - name: "Enable and start service"
   ansible.builtin.systemd:
     name: proxysql
-    enabled: yes
+    enabled: true
     state: started
 
 - name: "Install mariadb client"
-  apt: name=mariadb-client update_cache=yes state=latest
+  ansible.builtin.apt:
+    name: mariadb-client
+    update_cache: true
 
 - name: "Create sql config"
-  template:
-    src: "../../templates/proxy/proxy_config.j2"
+  ansible.builtin.template:
+    src: "./proxy/proxy_config.j2"
     dest: "/tmp/proxy_config.sql"
+    mode: 0644
 
 - name: "Run config"
-  shell:
-    cmd: mysql -u admin -padmin -h 127.0.0.1 -P6032 < /tmp/proxy_config.sql
+  ansible.builtin.command: "mysql -uadmin -p{{ proxy_sql_admin_password }} -h 127.0.0.1 -P6032 < /tmp/proxy_config.sql"
+  register: rendering
+  failed_when: rendering.stderr != None
+  changed_when: rendering.rc == 1

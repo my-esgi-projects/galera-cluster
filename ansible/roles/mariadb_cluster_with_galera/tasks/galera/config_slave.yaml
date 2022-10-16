@@ -1,15 +1,13 @@
 ---
 # tasks file for config galera slave nodes
 
-- name: Config slave nodes
-  template:
-    src: "../../templates/slave/galera_slave.j2"
+- name: "Config slave nodes"
+  ansible.builtin.template:
+    src: "slave/galera_slave.j2"
     dest: "/etc/mysql/mariadb.conf.d/galera.cnf"
+    mode: 0644
 
-- name: Restart mariadb service 
+- name: "Restart mariadb service"
   ansible.builtin.systemd:
     name: mariadb
     state: restarted
-
-
-

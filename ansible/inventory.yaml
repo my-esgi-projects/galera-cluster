@@ -5,19 +5,19 @@ all:
       children:
         galera_master:
           hosts:
-            192.168.1.30: 
-              
+            master-db.esgisrc.fr:
+   
         galera_slave:
           hosts:
-            192.168.1.17:
-            192.168.1.27:
+            slave1-db.esgisrc.fr:
+            slave2-db.esgisrc.fr:
 
         galera_proxy_sql:
           hosts:
-            192.168.1.70
+            proxy-db.esgisrc.fr:
       vars:
-        galera_hosts_short_names: ['db-1','db-2','db-3','proxysql']
-        domain_name: hdpw-esgi.fr
+        galera_hosts_short_names: ['master-db','slave1-db','slave2-db','proxy-db']
+        domain_name: "esgisrc.fr"
 
         # configs for mariadb
         mysql_root_password: "root"
