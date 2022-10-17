@@ -10,6 +10,14 @@
 - name: "Setup new galera cluster"
   ansible.builtin.command: galera_new_cluster
   changed_when: false
+  when: not _galera_grastate_file.stat.exists
+
+- name: "Set bootstrap to 1"
+  ansible.builtin.replace:
+    path: /var/lib/mysql/grastate.dat
+    regexp: 'safe_to_bootstrap: .*'
+    replace: 'safe_to_bootstrap: 1'
+  when: _galera_grastate_file.stat.exists
 
 - name: "Restart mariadb service"
   ansible.builtin.systemd:
@@ -32,19 +40,19 @@
     login_user: root
     login_password: "{{ mysql_root_password }}"
 
-- name: "Create another demo database"
-  community.mysql.mysql_db:
-    name: "anotherdemodb_master"
-    state: present
-    login_user: root
-    login_password: "{{ mysql_root_password }}"
-
 - name: "Create demo user"
   community.mysql.mysql_user:
     host: '%'
     name: "{{ galera_demo_user }}"
     password: "{{ galera_demo_user_password }}"
     state: present
-    priv: 'anotherdemodb_master.*:ALL'
+    priv: 'demodb_master.*:ALL'
     login_user: root
     login_password: "{{ mysql_root_password }}"
+
+- name: "Create crontask for edit galera state file after reboot"
+  ansible.builtin.cron:
+    name: "a job for edit grastate and restart mariadb service"
+    special_time: reboot
+    user: root
+    job: "sed -i -e 's#safe_to_bootstrap: .*#safe_to_bootstrap: 1#g' /var/lib/mysql/grastate.dat && systemctl restart mariadb"
