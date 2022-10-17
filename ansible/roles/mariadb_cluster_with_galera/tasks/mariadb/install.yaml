@@ -14,12 +14,19 @@
     update_cache: true
   loop: ['mariadb-server', 'python3-pymysql', 'mariadb-client', 'vim', 'sudo']
 
+
+- name: "Get stats of grastate file"
+  ansible.builtin.stat:
+    path: /var/lib/mysql/grastate.dat
+  register: _galera_grastate_file
+
 # Start MariaDB Service
 - name: "Start MariaDB service"
   ansible.builtin.systemd:
     name: mariadb
     enabled: true
     state: started
+  when: not _galera_grastate_file.stat.exists
 
  # MariaDB Configuration
 - name: "Sets the root password"
@@ -53,7 +60,3 @@
     replace: '#bind-address'
     backup: true
 
-- name: "Restart server"
-  ansible.builtin.systemd:
-    name: mariadb
-    state: restarted
