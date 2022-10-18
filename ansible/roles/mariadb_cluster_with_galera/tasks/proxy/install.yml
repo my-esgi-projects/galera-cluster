@@ -1,39 +1,51 @@
 ---
-
-#install proxysql and config it
+# Install proxysql and config it
 
 - name: "Check if proxysql is installed"
-  command: dpkg-query -W proxysql 
-  register: proxysql_check_deb
-  failed_when: proxysql_check_deb.rc > 1
-  changed_when: proxysql_check_deb.rc == 1
+  ansible.builtin.command: dpkg-query -W proxysql
+  register: _galera_proxysql_check_deb
+  failed_when: _galera_proxysql_check_deb.rc > 1
+  changed_when: _galera_proxysql_check_deb.rc == 1
 
 - name: "Get deb packages"
   ansible.builtin.get_url:
     url: https://github.com/sysown/proxysql/releases/download/v2.2.0/proxysql_2.2.0-debian10_amd64.deb
     dest: /tmp/proxysql.deb
-  when: proxysql_check_deb.rc == 1
+    mode: 0644
+  when: _galera_proxysql_check_deb.rc == 1
 
 - name: "Install my_package"
-  apt: 
+  ansible.builtin.apt:
     deb: "/tmp/proxysql.deb"
-  when: proxysql_check_deb.rc == 1
-
+  when: _galera_proxysql_check_deb.rc == 1
 
 - name: "Enable and start service"
   ansible.builtin.systemd:
     name: proxysql
-    enabled: yes
+    enabled: true
     state: started
 
 - name: "Install mariadb client"
-  apt: name=mariadb-client update_cache=yes state=latest
+  ansible.builtin.apt:
+    name: mariadb-client
+    update_cache: true
 
 - name: "Create sql config"
-  template:
-    src: "../../templates/proxy/proxy_config.j2"
+  ansible.builtin.template:
+    src: "./proxy/proxy_config.j2"
     dest: "/tmp/proxy_config.sql"
+    mode: 0644
+
+- name: "Check if proxy already setup"
+  ansible.builtin.shell: >
+    mysql --user=admin --password={{ proxy_sql_admin_password }} main --host=127.0.0.1 --port=6032
+    --execute="select * from mysql_servers where hostname='{{ galera_hosts_short_names[0] }}'"
+  check_mode: false
+  register: _galera_check_mysql_servers_already_exists
+  changed_when: false
 
 - name: "Run config"
-  shell:
-    cmd: mysql -u admin -padmin -h 127.0.0.1 -P6032 < /tmp/proxy_config.sql
+  ansible.builtin.shell: >
+    mysql --user=admin --password={{ proxy_sql_admin_password }} main
+    --host=127.0.0.1 --port=6032 < /tmp/proxy_config.sql
+  when: _galera_check_mysql_servers_already_exists.stdout == ''

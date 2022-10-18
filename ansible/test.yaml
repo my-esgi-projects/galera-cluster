@@ -1,56 +1,10 @@
 ---
-- hosts: galera
+- hosts: galera.master
   gather_facts: no
   remote_user: myuser
 
   tasks:
-    # - name: "test"
-    #   debug:
-    #     var : hostvars[inventory_hostname]['galera_hosts_short_names']
-
-    # - name: "debug"
-    #   debug:
-    #     msg: |
-    #       The index is {{ index }}
-    #   loop: "{{ vars['groups']['galera'] }}"
-    #   loop_control:
-    #     index_var: index 
-
     - name: show templating results
       ansible.builtin.debug:
         msg: "{{ lookup('ansible.builtin.template', './test.j2') }}"
       when: '"galera_master" in group_names'
-
-    # - name: with_indexed_items -> loop
-    #   ansible.builtin.debug:
-    #     msg: "{{ index }} - {{ item }}"
-    #   loop: "{{ vars['groups']['galera'] |flatten(levels=1) }}"
-    #   loop_control:
-    #     index_var: index
-
-    # - name: "debug"
-    #   debug:
-    #     msg: |
-    #       The ip is {{ item }}
-    #       The short name is  {{ hostvars[groups.galera[index]].galera_hosts_short_names[index] }} }}
-    #       The domain name is {{ hostvars[inventory_hostname]['domain_name'] }}
-    #   loop: "{{ vars['groups']['galera'] }}"
-    #   loop_control:
-    #     index_var: index 
-
-    # - name: "write in file"
-    #   lineinfile:
-    #     dest: /tmp/hosts
-    #     line: "{{ item }} {{ hostvars[groups.galera[index]].galera_hosts_short_names[index] }}.{{ hostvars[inventory_hostname]['domain_name'] }} {{ hostvars[groups.galera[index]].galera_hosts_short_names[index] }}"
-    #     state: present
-    #     create: yes
-    #     backup: yes
-    #   loop: "{{ vars['groups']['galera'] }}"
-    #   loop_control:
-    #     index_var: index 
-
-    # - name: "enable now service"
-    #   ansible.builtin.systemd:
-    #     name: sshd
-    #     enabled: yes
-    #     state: started

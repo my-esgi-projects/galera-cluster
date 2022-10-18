@@ -1,51 +1,58 @@
 ---
 # tasks file for config galera
 
-- name: Config master nodes
-  template:
-    src: "../../templates/master/galera_master.j2"
+- name: "Config master nodes"
+  ansible.builtin.template:
+    src: "master/galera_master.j2"
     dest: "/etc/mysql/mariadb.conf.d/galera.cnf"
+    mode: 0644
 
-- name: Setup new galera cluster 
-  shell:
-    cmd: galera_new_cluster
+- name: "Setup new galera cluster"
+  ansible.builtin.command: galera_new_cluster
+  changed_when: false
+  when: not _galera_grastate_file.stat.exists
 
-- name: Restart mariadb service 
+- name: "Set bootstrap to 1"
+  ansible.builtin.replace:
+    path: /var/lib/mysql/grastate.dat
+    regexp: 'safe_to_bootstrap: .*'
+    replace: 'safe_to_bootstrap: 1'
+  when: _galera_grastate_file.stat.exists
+
+- name: "Restart mariadb service"
   ansible.builtin.systemd:
     name: mariadb
     state: restarted
 
-
-- name: Create demodb database test
-  mysql_db:
+- name: "Create demodb database test"
+  community.mysql.mysql_db:
     name: "demodb_master"
     state: present
     login_user: root
     login_password: "{{ mysql_root_password }}"
 
-- name: Create monitor user
-  mysql_user:
+- name: "Create monitor user"
+  community.mysql.mysql_user:
+    host: '%'
     name: "{{ galera_monitor_user }}"
     password: "{{ galera_monitor_password }}"
-    state: present 
-    login_user: root
-    login_password: "{{ mysql_root_password }}"
-
-- name: Create another demo database
-  mysql_db:
-    name: "anotherdemodb_master"
     state: present
     login_user: root
     login_password: "{{ mysql_root_password }}"
 
-- name: Create demo user
-  mysql_user:
+- name: "Create demo user"
+  community.mysql.mysql_user:
+    host: '%'
     name: "{{ galera_demo_user }}"
     password: "{{ galera_demo_user_password }}"
-    state: present 
-    priv: 'anotherdemodb_master.*:ALL,GRANT'
+    state: present
+    priv: 'demodb_master.*:ALL'
     login_user: root
     login_password: "{{ mysql_root_password }}"
 
-
-
+- name: "Create crontask for edit galera state file after reboot"
+  ansible.builtin.cron:
+    name: "a job for edit grastate and restart mariadb service"
+    special_time: reboot
+    user: root
+    job: "sed -i -e 's#safe_to_bootstrap: .*#safe_to_bootstrap: 1#g' /var/lib/mysql/grastate.dat && systemctl restart mariadb"

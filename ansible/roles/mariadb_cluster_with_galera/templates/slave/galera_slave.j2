@@ -2,14 +2,18 @@
 
 {% set current_host_index = galera_hosts.index(inventory_hostname) %}
 
+{% set proxy_short_name = [galera_hosts_short_names | last] %}
+
+{% set galera_hosts_short_names_without_proxy = galera_hosts_short_names | difference(proxy_short_name) %}
+
 {#galera config node#}
 [galera]
 wsrep_on                 = ON
 wsrep_cluster_name       = "MariaDB Galera Cluster"
 wsrep_provider           = /usr/lib/galera/libgalera_smm.so
-wsrep_cluster_address    = "gcomm://{{ galera_hosts_short_names | join(',') }}"
+wsrep_cluster_address    = "gcomm://{{ galera_hosts_short_names_without_proxy | join(',') }}"
 binlog_format            = row
 default_storage_engine   = InnoDB
 innodb_autoinc_lock_mode = 2
 bind-address = 0.0.0.0
-wsrep_node_address="{{ galera_hosts_short_names[current_host_index] }}"
+wsrep_node_address="{{ galera_hosts_short_names_without_proxy[current_host_index] }}"

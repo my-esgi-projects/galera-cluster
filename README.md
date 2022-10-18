@@ -13,6 +13,7 @@ Setup galera cluster with 4 virtuals machins
 
 2. Edit inventory file for configure ip and short_name of yours server
     > cd galera-cluster
+    
     > vi inventory.yaml 
 
 3. Launch playbook with this command
