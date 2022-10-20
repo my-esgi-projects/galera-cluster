@@ -1,0 +1,65 @@
+---
+- name: "Create symlink in /var/www/html/"
+  ansible.builtin.file:
+    src: "{{ haproxy_wordpress_mount_path }}/wordpress"
+    dest: "/var/www/html/wordpress"
+    state: link
+    owner: "www-data"
+    group: "www-data"
+    mode: "0770"
+
+- name: "Create directory"
+  ansible.builtin.file:
+    path: /etc/ssl
+    state: directory
+    mode: '0755'
+
+- name: "Generate an OpenSSL private key"
+  ansible.builtin.openssl_privatekey:
+    path: "/etc/ssl/privkey.pem"
+    size: "2048"
+    type: "RSA"
+    backup: true
+
+- name: Generate an OpenSSL Certificate Signing Request with Subject information
+  ansible.builtin.openssl_csr:
+    path: "/etc/ssl/fullchain.csr"
+    privatekey_path: "/etc/ssl/privkey.pem"
+    country_name: "FR"
+    organization_name: "SelfSigned"
+    email_address: "selfsigned@test.com"
+    common_name: "{{ inventory_hostname }}"
+
+- name: Generate a Self Signed OpenSSL certificate
+  ansible.builtin.openssl_certificate:
+    path: "/etc/ssl/fullchain.pem"
+    privatekey_path: "/etc/ssl/privkey.pem"
+    csr_path: "/etc/ssl/fullchain.csr"
+    provider: selfsigned
+
+- name: "Create certificates"
+  ansible.builtin.openssl_certificate:
+    path: /etc/ssl/fullchain.crt
+    privatekey_path: /etc/ssl/privkey.pem
+    csr_path: /etc/ssl/fullchain.csr
+    provider: selfsigned
+
+- name: "Create file config"
+  ansible.builtin.template:
+    src: "./web.j2"
+    dest: "/etc/nginx/sites-available/wordpress.conf"
+    mode: 0644
+
+- name: "Create symlink for available"
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/wordpress.conf"
+    dest: "/etc/nginx/sites-enabled/wordpress.conf"
+    state: link
+
+- name: "Reload nginx service"
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: reloaded
+  loop:
+    - nginx
+    - "php{{ haproxy_wordpress_webservers_php_version }}-fpm"
