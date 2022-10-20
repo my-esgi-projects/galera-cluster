@@ -16,6 +16,9 @@ Setup galera cluster with 4 virtuals machins
     
     > vi inventory.yaml 
 
+3. Install gluster collection
+    > ansible-galaxy collection install gluster.gluster
+
 3. Launch playbook with this command
     > ansible-playbook -i inventory.yaml -v playbook.yaml -e 'ansible_python_interpreter=/usr/bin/python3' -c ssh
 
