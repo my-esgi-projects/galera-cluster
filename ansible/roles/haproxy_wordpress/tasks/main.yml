@@ -1,0 +1,24 @@
+---
+# tasks file for roles/haproxy_wordpress
+- name: "Install gnupg"
+  ansible.builtin.apt:
+    name: ['lsb-release', 'apt-transport-https', 'ca-certificates', 'unzip']
+    update_cache: true
+    force_apt_get: true
+
+
+# - name: "Include install nginx"
+#   ansible.builtin.include_tasks: nginx/install.yaml
+#   when: inventory_hostname in groups[haproxy_wordpress_webservers_group_name]
+
+# - name: "Include install wordpress"
+#   ansible.builtin.include_tasks: wordpress/install.yaml
+#   when: inventory_hostname == groups[haproxy_wordpress_webservers_group_name][0]
+
+# - name: "Include install nginx"
+#   ansible.builtin.include_tasks: nginx/config.yaml
+#   when: inventory_hostname in groups[haproxy_wordpress_webservers_group_name]
+
+- name: "Include install load balancer"
+  ansible.builtin.include_tasks: haproxy/install.yaml
+  when: inventory_hostname in groups[haproxy_wordpress_group_name_load_balancer]
