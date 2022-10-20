@@ -17,8 +17,8 @@ all:
           hosts:
             proxy-db.esgisrc.fr:
       vars:
-        #galera_hosts_short_names: ['master-db','slave1-db','slave2-db','proxy-db']
-        #domain_name: "esgisrc.fr"
+        galera_hosts_short_names: ['master-db','slave1-db','slave2-db','proxy-db']
+        domain_name: "esgisrc.fr"
 
         # configs for mariadb
         mysql_root_password: "root"
