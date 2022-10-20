@@ -1,0 +1,35 @@
+---
+# tasks file for roles/glusterfs
+
+- name: "Install glusterfs-server"
+  ansible.builtin.apt:
+    name: "glusterfs-server"
+    update_cache: true
+    force_apt_get: true
+
+- name: "Enable and start service"
+  ansible.builtin.systemd:
+    name: glusterd
+    enabled: true
+    state: started
+
+- name: "Register variable for get nodes without master"
+  ansible.builtin.set_fact:
+    _glusterfs_node_without_master: "{{ groups[glusterfs_group_name] | difference(groups[glusterfs_group_name][0]) }}"
+
+- name: "Peer hosts"
+  gluster.gluster.gluster_peer:
+    state: present
+    nodes: "{{ item }}"
+  loop: "{{ _glusterfs_node_without_master | list }}"
+
+- name: "Create volume"
+  ansible.builtin.gluster_volume:
+    state: present
+    name: "{{ gluster_volume_name }}"
+    bricks: "{{ gluster_bricks_path }}"
+    start_on_create: true
+    force: true
+    replicas: "{{ groups[glusterfs_group_name] | count }}"
+    cluster: "{{ groups[glusterfs_group_name] }}"
+  run_once: true
