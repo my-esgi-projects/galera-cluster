@@ -1,0 +1,39 @@
+---
+# defaults file for roles/haproxy_wordpress
+
+# mount path destination
+haproxy_wordpress_mount_path: "/mnt/galera-client-files"
+
+# haproxy_wordpress group name
+haproxy_wordpress_group_name: "haproxy"
+
+# haproxy_wordpress group name haproxy
+haproxy_wordpress_group_name_load_balancer: "web_load_balancer"
+
+# haproxy_wordpress webserver group name
+haproxy_wordpress_webservers_group_name: "web_servers"
+
+# haproxy wordpress php version to install
+haproxy_wordpress_webservers_php_version: 7.4
+
+# haproxy wordpress database name
+haproxy_wordpress_webservers_database_name: "demodb_master"
+
+# haproxy wordpress database user
+haproxy_wordpress_webservers_database_user: "demouser"
+
+# haproxy wordpress database password
+haproxy_wordpress_webservers_database_password: "demouser"
+
+# haproxy wordpress database host
+haproxy_wordpress_webservers_database_host: "proxy-db.esgisrc.fr"
+
+# haproxy wordpress database port
+haproxy_wordpress_webservers_database_port: "6033"
+
+
+# glusterfs group name in inventory
+glusterfs_group_name: "glusterfs"
+
+# glusterfs volume name to create
+gluster_volume_name: "volumegluster"
