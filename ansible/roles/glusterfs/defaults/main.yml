@@ -1,0 +1,11 @@
+---
+# defaults file for roles/glusterfs
+
+# glusterfs group name in inventory
+glusterfs_group_name: "glusterfs"
+
+# glusterfs volume name to create
+gluster_volume_name: "volumegluster"
+
+# gluster bricks path
+gluster_bricks_path: "/gluster-share"
