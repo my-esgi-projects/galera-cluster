@@ -25,11 +25,14 @@ haproxy_wordpress_webservers_database_user: "demouser"
 # haproxy wordpress database password
 haproxy_wordpress_webservers_database_password: "demouser"
 
+# haproxy wordpress server name
+haproxy_wordpress_webservers_server_name: "haproxy.esgisrc.fr"
+
 # haproxy wordpress database host
 haproxy_wordpress_webservers_database_host: "proxy-db.esgisrc.fr"
 
 # haproxy wordpress database port
-haproxy_wordpress_webservers_database_port: "6033"
+haproxy_wordpress_webservers_database_port: "3306"
 
 
 # glusterfs group name in inventory
