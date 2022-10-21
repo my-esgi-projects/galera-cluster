@@ -16,3 +16,8 @@
 - name: "Config proxysql"
   ansible.builtin.include_tasks: proxy/install.yml
   when: galera_group_name_for_proxy_sql in group_names
+
+
+- name: "Config haproxy"
+  ansible.builtin.include_tasks: proxy/haproxy.yml
+  when: galera_group_name_for_proxy_sql in group_names

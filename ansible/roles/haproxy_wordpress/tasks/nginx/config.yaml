@@ -1,0 +1,29 @@
+---
+- name: "Create symlink in /var/www/html/"
+  ansible.builtin.file:
+    src: "{{ haproxy_wordpress_mount_path }}/wordpress"
+    dest: "/var/www/html/wordpress"
+    state: link
+    owner: "www-data"
+    group: "www-data"
+    mode: "0770"
+
+- name: "Create file config"
+  ansible.builtin.template:
+    src: "./web.j2"
+    dest: "/etc/nginx/sites-available/wordpress.conf"
+    mode: 0644
+
+- name: "Create symlink for available"
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/wordpress.conf"
+    dest: "/etc/nginx/sites-enabled/wordpress.conf"
+    state: link
+
+- name: "Reload nginx service"
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: reloaded
+  loop:
+    - nginx
+    - "php{{ haproxy_wordpress_webservers_php_version }}-fpm"

@@ -1,0 +1,66 @@
+---
+
+- name: "Get wordpress file"
+  ansible.builtin.get_url:
+    url: https://wordpress.org/latest.zip
+    dest: /tmp/wordpress.zip
+    mode: '0644'
+
+- name: "Unzip file"
+  ansible.builtin.unarchive:
+    src: /tmp/wordpress.zip
+    dest: /tmp/
+    remote_src: true
+
+- name: "Move file to glusterfs mount folders"
+  ansible.builtin.copy:
+    remote_src: true
+    src: /tmp/wordpress
+    dest: "{{ haproxy_wordpress_mount_path }}/"
+    owner: "www-data"
+    group: "www-data"
+    mode: '0655'
+
+- name: "Create file config"
+  ansible.builtin.copy:
+    remote_src: true
+    src: "{{ haproxy_wordpress_mount_path }}/wordpress/wp-config-sample.php"
+    dest: "{{ haproxy_wordpress_mount_path }}/wordpress/wp-config.php"
+    owner: "www-data"
+    group: "www-data"
+    mode: '0655'
+
+- name: "Change database name"
+  ansible.builtin.replace:
+    path: "{{ haproxy_wordpress_mount_path }}/wordpress/wp-config.php"
+    regexp: 'database_name_here'
+    replace: "{{ haproxy_wordpress_webservers_database_name }}"
+    backup: true
+
+- name: "Change database user"
+  ansible.builtin.replace:
+    path: "{{ haproxy_wordpress_mount_path }}/wordpress/wp-config.php"
+    regexp: 'username_here'
+    replace: "{{ haproxy_wordpress_webservers_database_user }}"
+
+- name: "Change database password"
+  ansible.builtin.replace:
+    path: "{{ haproxy_wordpress_mount_path }}/wordpress/wp-config.php"
+    regexp: 'password_here'
+    replace: "{{ haproxy_wordpress_webservers_database_password }}"
+
+- name: "Change database host"
+  ansible.builtin.replace:
+    path: "{{ haproxy_wordpress_mount_path }}/wordpress/wp-config.php"
+    regexp: 'localhost'
+    replace: "{{ haproxy_wordpress_webservers_database_host }}:{{ haproxy_wordpress_webservers_database_port }}"
+
+- name: "Add FS FS_METHOD parameters"
+  ansible.builtin.lineinfile:
+    path: "{{ haproxy_wordpress_mount_path }}/wordpress/wp-config.php"
+    line: "define('FS_METHOD', 'direct');"
+    state: present
+    create: true
+    owner: "www-data"
+    group: "www-data"
+    mode: '0655'

@@ -1,0 +1,17 @@
+---
+- name: "Install haproxy"
+  ansible.builtin.apt:
+    name: "haproxy"
+    update_cache: true
+    force_apt_get: true
+
+- name: "Create file config"
+  ansible.builtin.template:
+    src: "./proxy/proxy.j2"
+    dest: "/etc/haproxy/haproxy.cfg"
+    mode: 0644
+
+- name: "Reload haproxy service"
+  ansible.builtin.systemd:
+    name: "haproxy"
+    state: restarted

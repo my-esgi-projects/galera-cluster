@@ -38,6 +38,14 @@
     login_unix_socket: /var/run/mysqld/mysqld.sock
   failed_when: false
 
+- name: "Create monitor user"
+  community.mysql.mysql_user:
+    host: '%'
+    name: "{{ galera_monitor_user }}"
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+
 - name: "Removes all anonymous user accounts"
   community.mysql.mysql_user:
     name: ''
@@ -45,6 +53,7 @@
     state: absent
     login_user: root
     login_password: "{{ mysql_root_password }}"
+  when: not _galera_grastate_file.stat.exists
 
 - name: "Removes the MySQL test database"
   community.mysql.mysql_db:
@@ -59,4 +68,3 @@
     regexp: 'bind-address'
     replace: '#bind-address'
     backup: true
-

@@ -2,7 +2,24 @@
 - name: "Install galera cluster"
   hosts: galera
   gather_facts: true
-  remote_user: my_user
+  remote_user: myuser
 
   roles:
     - mariadb_cluster_with_galera
+
+
+- name: "Install glusterfs"
+  hosts: glusterfs
+  gather_facts: true
+  remote_user: myuser
+
+  roles:
+    - glusterfs
+
+- name: "Install haproxy_wordpress"
+  hosts: haproxy
+  gather_facts: true
+  remote_user: myuser
+
+  roles:
+    - haproxy_wordpress

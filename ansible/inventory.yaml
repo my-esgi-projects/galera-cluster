@@ -1,3 +1,4 @@
+---
 all:
   
   children:
@@ -37,6 +38,28 @@ all:
         # configs for proxysql
         proxy_sql_admin_password: "admin"
 
+    glusterfs:
+      children:
+        glusterfs_master:
+          hosts:
+            file01-gfs.esgisrc.fr:
+            file02-gfs.esgisrc.fr:
+      vars:
+        glusterfs_group_name: "glusterfs"
+        gluster_volume_name: "volumegluster"
+        gluster_bricks_path: "/gluster-share"
+
+    haproxy:
+      children:
+        web_servers:
+          hosts:
+            web01.esgisrc.fr:
+            web02.esgisrc.fr:
+            web03.esgisrc.fr:
+        
+        web_load_balancer:
+          hosts:
+            haproxy.esgisrc.fr:
   
   vars:
     ansible_port: 2222

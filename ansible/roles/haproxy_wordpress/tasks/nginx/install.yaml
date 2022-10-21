@@ -1,0 +1,73 @@
+---
+- name: "Install php"
+  block:
+    - name: "Install php key"
+      ansible.builtin.get_url:
+        url: https://packages.sury.org/php/apt.gpg
+        dest: /etc/apt/trusted.gpg.d/debianphp.gpg
+        mode: 0644
+
+    - name: "Install repository"
+      ansible.builtin.apt_repository:
+        repo: "deb https://packages.sury.org/php/ {{ ansible_distribution_release }} main"
+        state: present
+
+- name: "Install nginx and php packages"
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    update_cache: true
+    force_apt_get: true
+  loop:
+    - nginx
+    - glusterfs-client
+    - "php{{ haproxy_wordpress_webservers_php_version }}-curl"
+    - "php{{ haproxy_wordpress_webservers_php_version }}-json"
+    - "php{{ haproxy_wordpress_webservers_php_version }}-cgi"
+    - "php{{ haproxy_wordpress_webservers_php_version }}-xsl"
+    - "php{{ haproxy_wordpress_webservers_php_version }}-cgi"
+    - "php{{ haproxy_wordpress_webservers_php_version }}-gd"
+    - "php{{ haproxy_wordpress_webservers_php_version }}-mbstring"
+    - "php{{ haproxy_wordpress_webservers_php_version }}-zip"
+    - "php{{ haproxy_wordpress_webservers_php_version }}-xmlrpc"
+    - "php{{ haproxy_wordpress_webservers_php_version }}-soap"
+    - "php{{ haproxy_wordpress_webservers_php_version }}-intl"
+    - "php{{ haproxy_wordpress_webservers_php_version }}-mysql"
+    - "php{{ haproxy_wordpress_webservers_php_version }}-fpm"
+
+- name: "Enable and start service"
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - nginx
+    - "php{{ haproxy_wordpress_webservers_php_version }}-fpm"
+
+- name: "Fetch database"
+  ansible.builtin.getent:
+    database: passwd
+
+- name: "Create folder with nice rigth"
+  ansible.builtin.file:
+    path: "{{ haproxy_wordpress_mount_path }}"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0770"
+
+- name: "Mount glusterfs volume"
+  ansible.posix.mount:
+    src: "{{ groups[glusterfs_group_name] | first }}:/{{ gluster_volume_name }}"
+    path: "{{ haproxy_wordpress_mount_path }}"
+    state: mounted
+    fstype: glusterfs
+    opts: sync
+    boot: true
+    backup: true
+
+- name: "Create crontask for mount manually"
+  ansible.builtin.cron:
+    name: "a job for add mount"
+    special_time: reboot
+    user: root
+    job: "mount -t glusterfs -o sync {{ groups[glusterfs_group_name] | first }}:/{{ gluster_volume_name }} {{ haproxy_wordpress_mount_path }}"
