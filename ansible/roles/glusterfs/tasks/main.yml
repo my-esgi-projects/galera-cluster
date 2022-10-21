@@ -31,5 +31,5 @@
     start_on_create: true
     force: true
     replicas: "{{ groups[glusterfs_group_name] | count }}"
-    cluster: "{{ groups[glusterfs_group_name] }}"
+    cluster: "{{ groups[glusterfs_group_name] }}"
   run_once: true
