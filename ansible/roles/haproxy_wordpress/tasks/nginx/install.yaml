@@ -61,4 +61,13 @@
     path: "{{ haproxy_wordpress_mount_path }}"
     state: mounted
     fstype: glusterfs
+    opts: sync
+    boot: true
     backup: true
+
+- name: "Create crontask for mount manually"
+  ansible.builtin.cron:
+    name: "a job for add mount"
+    special_time: reboot
+    user: root
+    job: "mount -t glusterfs -o sync {{ groups[glusterfs_group_name] | first }}:/{{ gluster_volume_name }} {{ haproxy_wordpress_mount_path }}"
