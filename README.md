@@ -34,6 +34,12 @@ We have configured manually reverse proxy for redirect trafic to haproxy web.
             proxy-db.esgisrc.fr:
 ```
 
+set variables for dns shortaname and make sure that you can make resolution with it
+ex: 
+  > nslookup slave1-db
+  
+  must return ip of slave1-db.esgisrc.fr
+
 - 2 debian servers for glusterfs servers
 
 ```
