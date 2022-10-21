@@ -31,15 +31,6 @@
     login_user: root
     login_password: "{{ mysql_root_password }}"
 
-- name: "Create monitor user"
-  community.mysql.mysql_user:
-    host: '%'
-    name: "{{ galera_monitor_user }}"
-    password: "{{ galera_monitor_password }}"
-    state: present
-    login_user: root
-    login_password: "{{ mysql_root_password }}"
-
 - name: "Create demo user"
   community.mysql.mysql_user:
     host: '%'
