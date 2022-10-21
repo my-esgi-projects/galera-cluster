@@ -29,7 +29,7 @@ server {
     access_log /var/log/nginx/_site.access.log;
 
     ssl_certificate /etc/ssl/fullchain.crt;
-    ssl_certificate_key /etc/ssl/privkey.pem;
+    ssl_certificate_key /etc/ssl/fullchain.pem.key;
 
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_prefer_server_ciphers on;
