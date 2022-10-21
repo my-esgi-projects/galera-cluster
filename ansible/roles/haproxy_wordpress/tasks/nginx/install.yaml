@@ -70,4 +70,4 @@
     name: "a job for add mount"
     special_time: reboot
     user: root
-    job: "mount -t glusterfs -o sync {{ groups[glusterfs_group_name] | first }}:/{{ gluster_volume_name }} {{ haproxy_wordpress_mount_path }}"
+    job: "sleep 10 && mount -a && mount -av 2>&1 | tee ~/mount.log"
