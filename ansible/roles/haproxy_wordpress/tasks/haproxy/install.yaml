@@ -5,49 +5,13 @@
     update_cache: true
     force_apt_get: true
 
-- name: "Create directory"
-  ansible.builtin.file:
-    path: /etc/ssl
-    state: directory
-    mode: '0755'
-
-- name: "Generate an OpenSSL private key"
-  ansible.builtin.openssl_privatekey:
-    path: "/etc/ssl/privkey.pem"
-    size: "2048"
-    type: "RSA"
-    backup: true
-
-- name: Generate an OpenSSL Certificate Signing Request with Subject information
-  ansible.builtin.openssl_csr:
-    path: "/etc/ssl/fullchain.csr"
-    privatekey_path: "/etc/ssl/privkey.pem"
-    country_name: "FR"
-    organization_name: "SelfSigned"
-    email_address: "selfsigned@test.com"
-    common_name: "{{ inventory_hostname }}"
-
-- name: Generate a Self Signed OpenSSL certificate
-  ansible.builtin.openssl_certificate:
-    path: "/etc/ssl/fullchain.pem"
-    privatekey_path: "/etc/ssl/privkey.pem"
-    csr_path: "/etc/ssl/fullchain.csr"
-    provider: selfsigned
-
-- name: "Create certificates"
-  ansible.builtin.openssl_certificate:
-    path: /etc/ssl/fullchain.crt
-    privatekey_path: /etc/ssl/privkey.pem
-    csr_path: /etc/ssl/fullchain.csr
-    provider: selfsigned
-
 - name: "Create file config"
   ansible.builtin.template:
     src: "./proxy.j2"
     dest: "/etc/haproxy/haproxy.cfg"
     mode: 0644
 
-- name: "Reload nginx service"
+- name: "Reload haproxy service"
   ansible.builtin.systemd:
     name: "haproxy"
     state: restarted
